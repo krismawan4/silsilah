@@ -55,7 +55,7 @@ class UpdateRequest extends FormRequest
         ];
     }
 
-    public function validated()
+    public function validated($key = null, $default = null)
     {
         $formData = parent::validated();
 

@@ -6,9 +6,12 @@ use App\User;
 use App\Couple;
 use Ramsey\Uuid\Uuid;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FamilyActionsController extends Controller
 {
+    protected $password = '87654321';
+    protected $email = '@email.com';
     /**
      * Set father for a user.
      *
@@ -22,6 +25,8 @@ class FamilyActionsController extends Controller
             'set_father_id' => 'nullable',
             'set_father'    => 'required_without:set_father_id|max:255',
         ]);
+        $remove_space  = preg_replace('/\s+/', '', $request->get('set_father'));
+        $strtolower = strtolower($remove_space);
 
         if ($request->get('set_father_id')) {
             $user->father_id = $request->get('set_father_id');
@@ -33,6 +38,14 @@ class FamilyActionsController extends Controller
             $father->nickname = $request->get('set_father');
             $father->gender_id = 1;
             $father->manager_id = auth()->id();
+
+            $email_count = User::where('email',$strtolower.$this->email)->count();
+            if ($email_count==0) {
+                $father->email = $strtolower.$this->email;
+            }else{
+                $father->email = $strtolower.$email_count.$this->email;
+            }
+            $father->password = bcrypt($this->password);
 
             $user->setFather($father);
         }
@@ -54,6 +67,9 @@ class FamilyActionsController extends Controller
             'set_mother'    => 'required_without:set_mother_id|max:255',
         ]);
 
+        $remove_space  = preg_replace('/\s+/', '', $request->get('set_mother'));
+        $strtolower = strtolower($remove_space);
+
         if ($request->get('set_mother_id')) {
             $user->mother_id = $request->get('set_mother_id');
             $user->save();
@@ -64,6 +80,14 @@ class FamilyActionsController extends Controller
             $mother->nickname = $request->get('set_mother');
             $mother->gender_id = 2;
             $mother->manager_id = auth()->id();
+
+            $email_count = User::where('email',$strtolower.$this->email)->count();
+            if ($email_count==0) {
+                $mother->email = $strtolower.$this->email;
+            }else{
+                $mother->email = $strtolower.$email_count.$this->email;
+            }
+            $mother->password = bcrypt($this->password);
 
             $user->setMother($mother);
         }
@@ -87,6 +111,9 @@ class FamilyActionsController extends Controller
             'add_child_birth_order' => 'nullable|numeric',
         ]);
 
+        $remove_space  = preg_replace('/\s+/', '', $request->get('add_child_name'));
+        $strtolower = strtolower($remove_space);
+
         $child = new User;
         $child->id = Uuid::uuid4()->toString();
         $child->name = $request->get('add_child_name');
@@ -95,8 +122,15 @@ class FamilyActionsController extends Controller
         $child->parent_id = $request->get('add_child_parent_id');
         $child->birth_order = $request->get('add_child_birth_order');
         $child->manager_id = auth()->id();
+        $email_count = User::where('email',$strtolower.$this->email)->count();
+        if ($email_count==0) {
+            $child->email = $strtolower.$this->email;
+        }else{
+            $child->email = $strtolower.$email_count.$this->email;
+        }
+        $child->password = bcrypt($this->password);
 
-        \DB::beginTransaction();
+        DB::beginTransaction();
         $child->save();
 
         if ($request->get('add_child_parent_id')) {
@@ -113,7 +147,7 @@ class FamilyActionsController extends Controller
 
         }
 
-        \DB::commit();
+        DB::commit();
 
         return back();
     }

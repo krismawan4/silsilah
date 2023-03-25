@@ -10,7 +10,7 @@ use App\UserMetadata;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Ramsey\Uuid\Uuid;
-use Storage;
+use Illuminate\Support\Facades\Storage;
 
 class UsersController extends Controller
 {
@@ -210,8 +210,10 @@ class UsersController extends Controller
             'photo' => 'required|image|max:200',
         ]);
 
-        if (Storage::exists($user->photo_path)) {
-            Storage::delete($user->photo_path);
+        if($user->photo_path!=''){
+            if (Storage::exists($user->photo_path)) {
+                Storage::delete($user->photo_path);
+            }
         }
 
         $user->photo_path = $request->photo->store('images');
