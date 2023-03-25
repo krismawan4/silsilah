@@ -13,6 +13,7 @@ use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\GoogleDriveJob;
 use App\Jobs\GoogleDriveJobDelete;
+use Illuminate\Support\Facades\DB;
 
 class UsersController extends Controller
 {
@@ -209,7 +210,7 @@ class UsersController extends Controller
     public function photoUpload(Request $request, User $user)
     {
         $request->validate([
-            'photo' => 'required|image|max:200',
+            'photo' => 'required|mimes:jpeg,png,jpg,webp',
         ]);
 
         // if($user->photo_path!=''){
@@ -227,20 +228,28 @@ class UsersController extends Controller
                 Storage::disk('local')->delete("public/images/".basename($oldImage));
             }
         }
-        $image = $request['photo'];
-        $filenameWithExt = $image->hashName();
-        $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-        $extension = $image->getClientOriginalExtension();
-        $fileNameToStore = time().'_'.$filename.'.'.$extension;
-        $storage = Storage::disk('public')->putFileAs('images', $image, $fileNameToStore);
-        $pathImg = storage_path('app/public/'.$storage);
-
-        $user->image_type = 'Local';
-        $user->photo_path = $storage;
-        $user->save();
-        dispatch(new GoogleDriveJob($pathImg, $fileNameToStore, 'images', $user));
+        DB::beginTransaction();
+        try {
+            $image = $request['photo'];
+            $filenameWithExt = $image->hashName();
+            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension = $image->getClientOriginalExtension();
+            $fileNameToStore = time().'_'.$filename.'.'.$extension;
+            $storage = Storage::disk('public')->putFileAs('images', $image, $fileNameToStore);
+            $pathImg = storage_path('app/public/'.$storage);
+    
+            $user->image_type = 'Local';
+            $user->photo_path = $storage;
+            $user->save();
+            DB::commit();
+            dispatch(new GoogleDriveJob($pathImg, $fileNameToStore, 'images', $user));
+            return back();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()->back()->with('error',$th->getMessage());
+            // dd($th->getMessage());
+        }
         
-        return back();
     }
 
     /**

@@ -85,7 +85,7 @@ return [
     "string"               => "Isian :attribute harus berupa string.",
     "timezone"             => "Isian :attribute harus berupa zona waktu yang valid.",
     "unique"               => "Isian :attribute sudah ada sebelumnya.",
-    'uploaded'             => 'Isian :attribute gagan diupload.',
+    'uploaded'             => 'Isian :attribute gagal diupload.',
     "url"                  => "Format isian :attribute tidak valid.",
 
     /*

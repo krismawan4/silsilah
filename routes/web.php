@@ -14,10 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/storage-link', function () {
-    Artisan::call('storage:link');
-    die('done storage-link');
-});
+// Route::get('/storage-link', function () {
+//     Artisan::call('storage:link');
+//     die('done storage-link');
+// });
 
 // Route::get('/migrate', function () {
 //     Artisan::call('migrate');
