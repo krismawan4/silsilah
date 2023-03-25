@@ -37,26 +37,29 @@ function formatSizeUnits($bytes)
 function userPhoto(User $user, $attributes = [])
 {
     return Html::image(
-        userPhotoPath($user->photo_path, $user->gender_id),
+        userPhotoPath($user),
         null,
         $attributes
     );
 }
 
 /**
- * Get user photo by path. Return default gender icon by default.
+ * userPhotoPath
  *
- * @param  string  $photoPath
- * @param  int  $genderId
- * @return string
+ * @param  mixed $user
+ * @return void
  */
-function userPhotoPath($photoPath, $genderId)
+function userPhotoPath($user)
 {
-    if (is_file(public_path('storage/'.$photoPath))) {
-        return asset('storage/'.$photoPath);
+    if($user->image_type=='GoogleDrive'){
+        return $user->image_drive_url;
     }
 
-    return asset('images/icon_user_'.$genderId.'.png');
+    if (is_file(public_path('storage/'.$user->photo_path))) {
+        return asset('storage/'.$user->photo_path);
+    }
+
+    return asset('images/icon_user_'.$user->gender_id.'.png');
 }
 
 function is_system_admin(User $user)

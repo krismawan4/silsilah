@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Facades\Storage;
+use App\Jobs\GoogleDriveJob;
+use App\Jobs\GoogleDriveJobDelete;
 
 class UsersController extends Controller
 {
@@ -210,15 +212,34 @@ class UsersController extends Controller
             'photo' => 'required|image|max:200',
         ]);
 
-        if($user->photo_path!=''){
-            if (Storage::exists($user->photo_path)) {
-                Storage::delete($user->photo_path);
+        // if($user->photo_path!=''){
+        //     if (Storage::exists($user->photo_path)) {
+        //         Storage::delete($user->photo_path);
+        //     }
+        // }
+        // $user->photo_path = $request->photo->store('images');
+        
+        $oldImage = $user->photo_path;
+        if ($oldImage != '') {
+            if($user->image_type=='GoogleDrive'){
+                dispatch(new GoogleDriveJobDelete($oldImage));
+            }elseif($user->image_type=='Local'){
+                Storage::disk('local')->delete("public/images/".basename($oldImage));
             }
         }
+        $image = $request['photo'];
+        $filenameWithExt = $image->hashName();
+        $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+        $extension = $image->getClientOriginalExtension();
+        $fileNameToStore = time().'_'.$filename.'.'.$extension;
+        $storage = Storage::disk('public')->putFileAs('images', $image, $fileNameToStore);
+        $pathImg = storage_path('app/public/'.$storage);
 
-        $user->photo_path = $request->photo->store('images');
+        $user->image_type = 'Local';
+        $user->photo_path = $storage;
         $user->save();
-
+        dispatch(new GoogleDriveJob($pathImg, $fileNameToStore, 'images', $user));
+        
         return back();
     }
 

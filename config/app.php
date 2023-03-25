@@ -191,7 +191,7 @@ return [
         /*
          * Package Service Providers...
          */
-
+        App\Providers\GoogleDriverServiceProvider::class,
         /*
          * Application Service Providers...
          */
