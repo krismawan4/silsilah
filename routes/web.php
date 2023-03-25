@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -10,6 +13,26 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::get('/storage-link', function () {
+    Artisan::call('storage:link');
+    die('done storage-link');
+});
+
+// Route::get('/migrate', function () {
+//     Artisan::call('migrate');
+//     die('migration');
+// });
+
+// Route::get('/migrate-refresh', function () {
+//     Artisan::call('migrate:refresh');
+//     die('migration');
+// });
+
+// Route::get('/db-seed', function () {
+//     Artisan::call('db:seed');
+//     die('db seed');
+// });
 
 Route::get('/', 'UsersController@search');
 
