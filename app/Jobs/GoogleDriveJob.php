@@ -49,7 +49,7 @@ class GoogleDriveJob implements ShouldQueue
         $img_url = Storage::disk('google')->url($path);
         DB::table($this->data->getTable())
             ->where('id', $this->data->id)
-            ->update(['photo_path' => NULL, 'image_drive_url' => $img_url, 'image_type' => 'GoogleDrive']);
+            ->update(['photo_path' => $path, 'image_drive_url' => $img_url, 'image_type' => 'GoogleDrive']);
         Storage::disk('local')->delete("public/$this->folder/".basename($this->pathImg));
     }
 }
